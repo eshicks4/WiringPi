@@ -70,9 +70,13 @@ OBJ	=	$(SRC:.c=.o)
 
 all:		$(DYNAMIC)
 
-.PHONY:	static
-static:	
-		$Q cat noMoreStatic
+static:		$(STATIC)
+
+$(STATIC):	$(OBJ)
+	$Q echo "[Link (Static)]"
+	$Q ar rcs $(STATIC) $(OBJ)
+	$Q ranlib $(STATIC)
+#	@size   $(STATIC)
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
@@ -110,6 +114,15 @@ check-deb-destdir:
 ifndef DEB_DESTDIR
 	$(error DEB_DESTDIR is undefined)
 endif
+
+.PHONY:	install-static
+install-static:	$(STATIC)
+	$Q echo "[Install Headers]"
+	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/include
+	$Q install -m 0644 $(HEADERS)					$(DESTDIR)$(PREFIX)/include
+	$Q echo "[Install Static Lib]"
+	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
+	$Q install -m 0755 libwiringPi.a					$(DESTDIR)$(PREFIX)/lib
 
 .PHONY:	install-deb
 install-deb:	$(DYNAMIC) check-deb-destdir
